@@ -17,6 +17,7 @@
   </head>
   <body>
     <div id="textbox">
+        <label for="text">Kirjeldus</label>
         <textarea id="text"></textarea>
     </div>
     <div id="mapid" style="height: 100vh"></div>
@@ -59,9 +60,27 @@
             var markersLayer = L.layerGroup().addTo(mymap);
 
             function addMarkerToMap(clickLoc) {
-                L.marker(clickLoc.latlng).bindPopup(document.getElementById('text').value)
+                var text = document.getElementById('text').value;
+                var lat = clickLoc.latlng.lat.toFixed(4);
+                var lng = clickLoc.latlng.lng.toFixed(4);
+                L.marker(clickLoc.latlng).bindPopup(text)
                     .addTo(markersLayer);
-                console.log('Latitude: ' + clickLoc.latlng.lat.toFixed(4) + ' ' + 'Longitude: ' + clickLoc.latlng.lng.toFixed(4));
+
+                $.ajax({
+                    url: "/api/kohad",
+                    type:"GET",
+                    data: {text:text, lat:lat, lng:lng},
+                    success: function () {
+                        alert("Koht lisatud!")
+                        document.getElementById('text').value = "";
+                    },
+                    error: function (error_data) {
+                        alert("Koha lisamine ebaõnnestus!");
+                        console.log(error_data);
+
+                    }
+                });
+                console.log(text + ' ' + 'Latitude: ' + lat + ' ' + 'Longitude: ' + lng);
             }
 
             mymap.on('dblclick', addMarkerToMap);
