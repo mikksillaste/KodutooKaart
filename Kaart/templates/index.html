@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Kaart</title>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css"
+          integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ=="
+          crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"
+            integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log=="
+            crossorigin=""></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+  </head>
+  <body>
+    <div id="textbox">
+        <textarea id="text"></textarea>
+    </div>
+    <div id="mapid" style="height: 100vh"></div>
+        <script>
+        {% block jquery %}
+{#            var markers = [#}
+{#            {#}
+{#                "text": "Test1",#}
+{#                "lat": 58.53,#}
+{#                "lng": 25.33#}
+{#            },#}
+{#            {#}
+{#                "text": "Test2",#}
+{#                "lat": 59.1421,#}
+{#                "lng": 24.8346#}
+{#            } ];#}
+
+            var endpoint = '/api/data';
+
+            $.ajax({
+                method: "GET",
+                url: endpoint,
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function (data) {
+                    for ( var i=0; i < data.length; ++i )
+                    {
+                        L.marker( [data[i].lat, data[i].lng] )
+                            .bindPopup(data[i].text)
+                            .addTo(mymap);
+                    }
+                    console.log(data);
+                },
+                // Kui päring ebaõnnestub, siis logime konsooli error'i
+                error: function (error_data) {
+                    console.log("error");
+                    console.log(error_data);
+                }
+            });
+
+            var mymap = L.map('mapid', {
+                center: [58.53, 25.33],
+                zoom: 8,
+                doubleClickZoom: false
+            });
+
+            L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(mymap);
+
+            var markersLayer = L.layerGroup().addTo(mymap);
+
+            function addMarkerToMap(clickLoc) {
+                L.marker(clickLoc.latlng).bindPopup(document.getElementById('text').value)
+                    .addTo(markersLayer);
+                console.log('Latitude: ' + clickLoc.latlng.lat.toFixed(4) + ' ' + 'Longitude: ' + clickLoc.latlng.lng.toFixed(4));
+            }
+
+            mymap.on('dblclick', addMarkerToMap);
+
+        {% endblock %}
+        </script>
+  </body>
+</html>
